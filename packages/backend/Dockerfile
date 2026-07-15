@@ -31,6 +31,13 @@ RUN pip3 install mkdocs-techdocs-core==1.1.7
 # From here on we use the least-privileged `node` user to run the backend.
 WORKDIR /app
 RUN chown node:node /app
+
+# Pre-create the yarn berry home directory owned by `node`. BuildKit's cache
+# mount below only chowns its exact target (.yarn/berry/cache), leaving the
+# parent owned by root, which then blocks yarn from creating sibling
+# directories (e.g. .yarn/berry/index) as the unprivileged `node` user.
+RUN mkdir -p /home/node/.yarn/berry && chown -R node:node /home/node/.yarn
+
 USER node
 
 
